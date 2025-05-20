@@ -127,7 +127,6 @@ namespace WpfApp2
 
         private async void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("[DEBUG] LoginButton_Click: Kísérlet...");
             var loginRequest = new LoginRequest { EmailAddress = EmailLoginInput.Text, Password = PasswordLoginInput.Password };
             var jsonPayload = JsonConvert.SerializeObject(loginRequest, jsonSerializerSettings);
             var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
@@ -135,7 +134,6 @@ namespace WpfApp2
             {
                 var res = await client.PostAsync("/api/users/loginCheck", content);
                 var responseJson = await res.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] LoginButton_Click: Szerver válasz: {res.StatusCode}, Tartalom: {responseJson}");
                 if (res.IsSuccessStatusCode)
                 {
                     var loginResponse = JsonConvert.DeserializeObject<LoginResponse>(responseJson, jsonSerializerSettings);
@@ -143,7 +141,6 @@ namespace WpfApp2
                     {
                         authToken = loginResponse.Token;
                         currentUser = loginResponse.User;
-                        System.Diagnostics.Debug.WriteLine($"[DEBUG] LoginButton_Click: Sikeres bejelentkezés, User ID: {currentUser.Id}, IsAdmin: {currentUser.IsAdmin}");
                         MessageBox.Show(loginResponse.Message, "Sikeres bejelentkezés", MessageBoxButton.OK, MessageBoxImage.Information);
                         UpdateUIVisibility();
                         EmailLoginInput.Text = ""; PasswordLoginInput.Password = "";
@@ -165,7 +162,6 @@ namespace WpfApp2
             catch (Exception ex)
             {
                 MessageBox.Show($"Kivétel a bejelentkezés során: {ex.Message}", "Hiba", MessageBoxButton.OK, MessageBoxImage.Error);
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] LoginButton_Click: Kivétel: {ex.ToString()}");
             }
         }
 
@@ -250,14 +246,12 @@ namespace WpfApp2
         {
             if (MovieList.SelectedItem is Movie selectedMovie)
             {
-                if (selectedMovie.Id <= 0) { System.Diagnostics.Debug.WriteLine($"[DEBUG] MovieList_SelectionChanged: Érvénytelen film ID: {selectedMovie.Id}"); ClearMovieDetails(); return; }
+                if (selectedMovie.Id <= 0) {  ClearMovieDetails(); return; }
                 string requestUrl = $"/api/movies/movie-by-id/{selectedMovie.Id}";
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] MovieList_SelectionChanged: URL: {client.BaseAddress}{requestUrl.Substring(1)}");
                 try
                 {
                     var res = await client.GetAsync(requestUrl);
                     var responseContent = await res.Content.ReadAsStringAsync();
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Res Státusz: {res.StatusCode}, Tartalom: {responseContent}");
                     if (res.IsSuccessStatusCode)
                     {
                         var movie = JsonConvert.DeserializeObject<Movie>(responseContent, jsonSerializerSettings);
@@ -283,7 +277,6 @@ namespace WpfApp2
             if (currentUser == null) { MessageBox.Show("Bejelentkezés szükséges.", "Hiba", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
             if (!currentUser.IsAdmin) { MessageBox.Show("Nincs jogosultságod!", "Hiba", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
 
-            System.Diagnostics.Debug.WriteLine($"[DEBUG] CreateOrUpdateButton_Click: currentUser.Id = {currentUser.Id}, Admin: {currentUser.IsAdmin}");
 
             var title = TitleInput.Text; var description = DescriptionInput.Text; var imgUrl = ImgInput.Text;
             if (!int.TryParse(YearInput.Text, out int year) || year < 1800 || year > DateTime.Now.Year + 10)
@@ -301,13 +294,11 @@ namespace WpfApp2
 
                 if (editingMovieId.HasValue)
                 {
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Film frissítése, ID: {editingMovieId.Value}, Payload: {jsonPayload}");
                     res = await client.PutAsync($"/api/movies/movies/{editingMovieId.Value}", content);
                     successMessage = "Film sikeresen frissítve!";
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Új film létrehozása, Payload: {jsonPayload}");
                     res = await client.PostAsync("/api/movies/movies", content);
                     successMessage = "Film sikeresen létrehozva!";
                 }
@@ -321,13 +312,11 @@ namespace WpfApp2
                 {
                     var errorContent = await res.Content.ReadAsStringAsync();
                     MessageBox.Show($"Művelet sikertelen: {res.StatusCode} - {errorContent}", "Hiba", MessageBoxButton.OK, MessageBoxImage.Error);
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Hiba {(editingMovieId.HasValue ? "frissítéskor" : "létrehozáskor")}: {res.StatusCode} - {errorContent}");
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Kivétel a művelet során: {ex.Message}", "Hiba", MessageBoxButton.OK, MessageBoxImage.Error);
-                System.Diagnostics.Debug.WriteLine($"[DEBUG] Kivétel {(editingMovieId.HasValue ? "frissítéskor" : "létrehozáskor")}: {ex.ToString()}");
             }
         }
 
