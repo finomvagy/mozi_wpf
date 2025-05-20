@@ -5,35 +5,154 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp2"
         mc:Ignorable="d"
-         Title="Filmek" Height="450" Width="800">
+        Title="Film Adatbázis" Height="700" Width="950"
+        Background="#FFE5E5E5" MinWidth="750" MinHeight="600">
     <Grid Margin="10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="3*"/>
-        </Grid.ColumnDefinitions>
 
-        <ListView x:Name="MovieList" Grid.Row="0" Grid.Column="0" SelectionChanged="MovieList_SelectionChanged"
-                  DisplayMemberPath="Title"/>
+        <Border Grid.Row="0" Background="LightGray" Padding="10" CornerRadius="5" Margin="0,0,0,5">
+            <StackPanel Orientation="Horizontal">
+                <!-- Bejelentkezési Panel -->
+                <StackPanel x:Name="LoginPanel" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Label Content="Email:" VerticalAlignment="Center"/>
+                    <TextBox x:Name="EmailLoginInput" Width="120" Margin="5,0" VerticalAlignment="Center"/>
+                    <Label Content="Jelszó:" VerticalAlignment="Center"/>
+                    <PasswordBox x:Name="PasswordLoginInput" Width="100" Margin="5,0" VerticalAlignment="Center"/>
+                    <Button x:Name="LoginButton" Content="Bejelentkezés" Click="LoginButton_Click" Margin="5,0" Padding="10,5"/>
+                    <Button x:Name="ShowRegisterButton" Content="Regisztrációra váltás" Click="ShowRegisterButton_Click" Margin="10,0,0,0" Padding="10,5" Background="LightSkyBlue"/>
+                </StackPanel>
 
-        <StackPanel Grid.Row="0" Grid.Column="1" Margin="10">
-            <TextBlock x:Name="TitleText" FontSize="18" FontWeight="Bold" />
-            <TextBlock x:Name="YearText" Margin="0,5,0,5"/>
-            <TextBlock x:Name="DescriptionText" TextWrapping="Wrap" />
-        </StackPanel>
+                <!-- Regisztrációs Panel -->
+                <StackPanel x:Name="RegisterPanel" Orientation="Vertical" VerticalAlignment="Center" Visibility="Collapsed" Margin="10,0,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Felhasználónév:" VerticalAlignment="Center"/>
+                        <TextBox x:Name="UsernameRegisterInput" Width="120" Margin="5,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                        <Label Content="Email:" VerticalAlignment="Center" Margin="0,0,33,0"/>
+                        <TextBox x:Name="EmailRegisterInput" Width="120" Margin="5,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                        <Label Content="Jelszó:" VerticalAlignment="Center" Margin="0,0,30,0" />
+                        <PasswordBox x:Name="PasswordRegisterInput" Width="100" Margin="5,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                        <Label Content="Jelszó újra:" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                        <PasswordBox x:Name="PasswordConfirmRegisterInput" Width="100" Margin="5,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button x:Name="RegisterButton" Content="Regisztráció" Click="RegisterButton_Click" Margin="5,0" Padding="10,5" Background="LightGreen"/>
+                        <Button x:Name="ShowLoginButton" Content="Bejelentkezésre váltás" Click="ShowLoginButton_Click" Margin="10,0,0,0" Padding="10,5" Background="LightSkyBlue"/>
+                    </StackPanel>
+                </StackPanel>
 
-        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="10">
-            <TextBlock Text="Új film hozzáadása" FontWeight="Bold"/>
-            <Label Content="Cím:"/>
-            <TextBox x:Name="TitleInput" Width="200"/>
-            <Label Content="Leírás:"/>
-            <TextBox x:Name="DescriptionInput" Width="200" Height="60" TextWrapping="Wrap"/>
-            <Label Content="Év:"/>
-            <TextBox x:Name="YearInput" Width="200"/>
-            <Button Content="Létrehozás" Click="CreateButton_Click" Width="100" Margin="0,5,0,0"/>
-        </StackPanel>
+                <!-- Bejelentkezett Felhasználó Panel -->
+                <StackPanel x:Name="UserInfoPanel" Orientation="Horizontal" VerticalAlignment="Center" Visibility="Collapsed">
+                    <TextBlock x:Name="LoggedInUserText" VerticalAlignment="Center" FontWeight="Bold"/>
+                    <Button x:Name="LogoutButton" Content="Kijelentkezés" Click="LogoutButton_Click" Margin="15,0,0,0" Padding="10,5" Background="OrangeRed" Foreground="White"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Button Grid.Row="1" x:Name="AddNewMovieButton" Content="Új Film Hozzáadása" Click="AddNewMovieButton_Click"
+                HorizontalAlignment="Left" Margin="0,5,0,10" Padding="10,5" Background="DodgerBlue" Foreground="White"
+                Visibility="Collapsed"/>
+
+
+        <!-- Fő tartalom -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+
+            <DockPanel Grid.Column="0" Margin="0,0,5,0">
+                <Border DockPanel.Dock="Top" BorderBrush="Gray" BorderThickness="1,1,1,0" CornerRadius="5,5,0,0" Padding="5" Background="WhiteSmoke">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBox x:Name="SearchInput" Width="200" Margin="0,0,5,0" TextChanged="SearchInput_TextChanged" ToolTip="Keresés cím, leírás vagy év alapján" VerticalAlignment="Center" Padding="3"/>
+                        <Button x:Name="ClearSearchButton" Content="X" Click="ClearSearchButton_Click" ToolTip="Keresés törlése" VerticalAlignment="Center" Padding="5,3" FontWeight="Bold" Background="LightCoral" Foreground="White"/>
+                    </StackPanel>
+                </Border>
+
+                <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="0,0,5,5" Padding="5">
+                    <ListView x:Name="MovieList" SelectionChanged="MovieList_SelectionChanged" ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="LightGray" BorderThickness="0,0,0,1" Padding="5">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="14" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1" Content="Szerk." Margin="10,0,5,0" Padding="8,3"
+                                                DataContext="{Binding}" Click="EditMovieButton_Click" 
+                                                ToolTip="Film szerkesztése (csak admin)"/>
+                                        <Button Grid.Column="2" Content="Töröl" Margin="5,0,0,0" Padding="8,3" Background="IndianRed" Foreground="White"
+                                                DataContext="{Binding}" Click="DeleteMovieButton_Click"
+                                                ToolTip="Film törlése (csak admin)"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Border>
+            </DockPanel>
+
+            <Border Grid.Column="1" BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Margin="5,0,0,0" Padding="10">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Film Részletei" FontSize="18" FontWeight="Bold" Margin="0,0,0,10" Foreground="#FF333333"/>
+                        <TextBlock x:Name="TitleText" FontSize="20" FontWeight="Bold" TextWrapping="Wrap" Foreground="#FF0066CC" Text="Nincs film kiválasztva"/>
+                        <TextBlock Text="Év:" FontWeight="SemiBold" Margin="0,10,0,0"/>
+                        <TextBlock x:Name="YearText" Margin="0,2,0,10" FontSize="14"/>
+                        <TextBlock Text="Leírás:" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                        <TextBlock x:Name="DescriptionText" TextWrapping="Wrap" Margin="0,2,0,0" FontSize="14" MinHeight="80"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="3" x:Name="AddMoviePanel" BorderBrush="DarkGreen" BorderThickness="1" CornerRadius="5" Margin="0,10,0,0" Padding="10" Background="#FFF0FFF0" Visibility="Collapsed">
+            <StackPanel>
+                <TextBlock x:Name="AddMoviePanelTitle" Text="Új film hozzáadása" FontWeight="Bold" FontSize="16" Margin="0,0,0,10" Foreground="DarkGreen"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label Grid.Row="0" Grid.Column="0" Content="Cím:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="TitleInput" Margin="5" Padding="3"/>
+
+                    <Label Grid.Row="1" Grid.Column="0" Content="Év:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" x:Name="YearInput" Margin="5" Padding="3"/>
+
+                    <Label Grid.Row="2" Grid.Column="0" Content="Kép URL:" VerticalAlignment="Center"/>
+                    <TextBox Grid.Row="2" Grid.Column="1" x:Name="ImgInput" Margin="5" Padding="3"/>
+
+                    <Label Grid.Row="3" Grid.Column="0" Content="Leírás:" VerticalAlignment="Top" Margin="0,8,0,0"/>
+                    <TextBox Grid.Row="3" Grid.Column="1" x:Name="DescriptionInput" Margin="5" AcceptsReturn="True" TextWrapping="Wrap" Height="80" VerticalScrollBarVisibility="Auto" Padding="3"/>
+
+                    <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Margin="5,10,5,5">
+                        <Button x:Name="CreateOrUpdateButton" Content="Létrehozás" Click="CreateOrUpdateButton_Click" Width="150" Padding="10,5" Background="ForestGreen" Foreground="White"/>
+                        <Button x:Name="CancelEditButton" Content="Mégsem" Click="CancelEditButton_Click" Width="100" Margin="10,0,0,0" Padding="10,5" Background="Gray" Foreground="White" Visibility="Collapsed"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>
